@@ -29,7 +29,7 @@ CSV 文件中。届时，只需要把压缩包和 CSV 文件发给我即可。
 
 ``` r
 library(photoTransfer)
-setwd("~/Downloads")
+setwd("~/Downloads")  # 把这个路径改成你自己放图片的位置
 results = compare_with_remote(".")
 #> Zipping 18 files...
 #> Done! Please check the file at: files.zip.
