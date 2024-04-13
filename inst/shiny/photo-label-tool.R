@@ -33,14 +33,14 @@ ui <- fluidPage(
 
 server <- function(input, output, session) {
   # 存储图片数据和标注的反应性值
-  annotations <- reactiveVal(data.frame(image_path = "", old_label = "", current_label = ""))
+  annotations <- reactiveVal(data.frame(image_path = "www/images/P8H5.jpg", old_label = "", current_label = ""))
   current_index <- reactiveVal()
 
   # 处理文件上传并更新标注数据
   observeEvent(input$fileInput, {
     file <- input$fileInput
     if (is.null(file)) return()
-    user_data = read_csv(file$datapath)
+    user_data = read_csv(file$datapath, col_types = "c")
     colnames(user_data) = c("image_path","old_label")
     user_data$current_label = user_data$old_label
     annotations(user_data)
@@ -49,12 +49,12 @@ server <- function(input, output, session) {
 
   # 在UI中显示标注数据
   output$dataTable <- renderDT({
-    datatable(annotations(), selection = "none", escape = FALSE, callback = JS("
+    datatable(annotations(), selection = "none", escape = FALSE,
+        # 响应鼠标点击，更新 current_index 的值
+        callback = JS("
             table.on('click', 'tr', function () {
-                $(this).toggleClass('selected').siblings().removeClass('selected');
                 var data = table.row(this).data();
                 if (data) {
-                    Shiny.setInputValue('table_click', data[1]);
                     // 获取当前行的索引（注意：索引是从0开始的）
                     var index = table.row(this).index();
                     // 通过Shiny.setInputValue更新current_index
@@ -62,7 +62,7 @@ server <- function(input, output, session) {
                 }
             });
         "),
-        #
+        # 响应 current_index 更新高亮的行
         options = list(rowCallback = JS("
                 function(row, data, displayNum, displayIndex, dataIndex) {
                   if (dataIndex === ", current_index(), " - 1) {
@@ -179,7 +179,6 @@ server <- function(input, output, session) {
       write.csv(annotations(), file, row.names = FALSE)
     }
   )
-
 
 
 }
