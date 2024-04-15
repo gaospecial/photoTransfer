@@ -35,7 +35,10 @@ server <- function(input, output, session) {
   # browser()
   reactlog()
 
-  example_annotation = data.frame(image_path = "www/images/P8H5.jpg", old_label = "", current_label = "")
+  example_annotation = data.frame(
+    image_path = list.files("www/images", ".jpg", full.names = TRUE),
+    old_label = "",
+    current_label = "")
   output$dataTable <- renderDT(example_annotation, selection = "single", server = TRUE)
 
   # 存储图片数据和标注的反应性值
