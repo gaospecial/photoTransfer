@@ -23,10 +23,7 @@ server <- function(input, output) {
                 var currentPageInfo = table.page.info()
                 Shiny.setInputValue('myTable_page_info', currentPageInfo);
               })
-              table.on('click', 'tr', function(){
-                var index = $(this).index()
-                Shiny.setInputValue('myTable_index', index)
-              })
+
               "))
   })
 
