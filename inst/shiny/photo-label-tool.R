@@ -10,11 +10,14 @@ ui <- fluidPage(
 
   sidebarLayout(
     sidebarPanel(width = 6,
+      # TODO: 从文件夹读取待注释数据
+
+      # 上传处理列表
       fileInput("fileInput", "选择标注 CSV 文件"),
       DTOutput("dataTable"),
       hr(),
       # 添加下载链接
-      downloadLink("save", "下载标注"),
+      downloadButton("save", "下载当前标注"),
     ),
 
     mainPanel(width = 6,
@@ -27,7 +30,10 @@ ui <- fluidPage(
       ),
       verbatimTextOutput("info") # 用于显示与DataTable相关变量的UI组件
     )
-  )
+  ),
+
+  # TODO：使用 JS 放大图片区域
+  includeScript("www/script.js")
 )
 
 server <- function(input, output, session) {
@@ -115,6 +121,8 @@ server <- function(input, output, session) {
     search = input$dataTable_search
     idx = current_index()
     indexes = input$dataTable_rows_all
+
+    # 更新页面
     if (idx %in% indexes) {
       targetRow = which(input$dataTable_rows_all == idx)
       targetPage = ceiling(targetRow / input$dataTable_state$length) # 向上取整得到页码
@@ -122,6 +130,10 @@ server <- function(input, output, session) {
     } else {
       current_index(indexes[[1]])
     }
+
+    # TODO: 更新按钮可用性
+    #if (which(indexes == current_index()) <= 1) disable("prev_photo")
+    #if (which(indexes == current_index()) >= length(indexes)) disable("next_photo")
   })
 
   # 响应 index 变化，更新当前图片、dataTable 的显示和按钮状态
@@ -132,7 +144,7 @@ server <- function(input, output, session) {
     output$imageDisplay <- renderImage({
       imagePath <- data$image_path[[idx]]
       # 直接从磁盘路径加载图片
-      list(src = imagePath, width = "400px")
+      list(src = imagePath, width = "auto", height = "400px")
     }, deleteFile = FALSE)
 
     # 更新 dataTable 状态，高亮显示 idx 的行
