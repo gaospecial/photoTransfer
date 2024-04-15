@@ -85,7 +85,6 @@ server <- function(input, output, session) {
   observeEvent(input$prev_photo, {
     idx = current_index()
     indexes = input$dataTable_rows_all
-    if (is.null(indexes)) return()
     pos = which(indexes == idx)
     if (pos > 1) {
       current_index(indexes[pos - 1])
@@ -99,16 +98,28 @@ server <- function(input, output, session) {
   observeEvent(input$next_photo, {
     idx = current_index()
     indexes = input$dataTable_rows_all
-    if (is.null(indexes)) return()
     pos = which(indexes == idx)
     if (pos < length(indexes)) {
-      current_index(indexes[idx + 1])
+      current_index(indexes[pos + 1])
     } else {
       # 如果是最后一个元素，那么禁用 next_photo 按钮
       disable("next_photo")
     }
   })
 
+  # 响应 search 后的列表
+  observeEvent(input$dataTable_search, {
+    search = input$dataTable_search
+    idx = current_index()
+    indexes = input$dataTable_rows_all
+    if (idx %in% indexes) {
+      targetRow = which(input$dataTable_rows_all == idx)
+      targetPage = ceiling(targetRow / input$dataTable_state$length) # 向上取整得到页码
+      selectPage(dataTableProxy, targetPage)
+    } else {
+      current_index(indexes[[1]])
+    }
+  })
 
   # 响应 index 变化，更新当前图片、dataTable 的显示和按钮状态
   observeEvent(current_index(), {
@@ -125,11 +136,8 @@ server <- function(input, output, session) {
     selectRows(dataTableProxy, c(row = idx))
 
     # 显示对应的页面
-    indexes = input$dataTable_rows_all
-    if (is.null(indexes)) return()
-    datatable_page_length = input$dataTable_state$length
-    targetRow = which(indexes == idx)
-    targetPage = ceiling(targetRow / datatable_page_length) # 向上取整得到页码
+    targetRow = which(input$dataTable_rows_all == idx)
+    targetPage = ceiling(targetRow / input$dataTable_state$length) # 向上取整得到页码
     selectPage(dataTableProxy, targetPage)
 
     # 更新 imageLabel
