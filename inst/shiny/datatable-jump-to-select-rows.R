@@ -43,7 +43,7 @@ server <- function(input, output, session) {
     selectRows(proxy, input$row_id)
 
     # 向客户端传递信息
-    session$sendCustomMessage(type = 'jumpTo', list(id = "my_datatable", index = input$row_id - 1))
+    session$sendCustomMessage(type = 'jumpTo', list(container = "my_datatable", index = input$row_id - 1))
     # showNotification(input$row_id)
   })
 
