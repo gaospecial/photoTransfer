@@ -15,7 +15,7 @@ ui <- fluidPage(
 server <- function(input, output, session) {
 
   # Server-oriented image URL
-  imageURL <- "www/images/P8H5.jpg"
+  imageURL <- "www/images/1.jpg"
 
   output$imageDisplay <- renderImage({
     # Return null if the URL is missing
