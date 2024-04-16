@@ -5,7 +5,13 @@ library(shinyjs)
 
 ui <- fluidPage(
   useShinyjs(),
-  includeCSS("www/shiny.css"),
+
+  tags$head(
+    tags$script(src = "jquery.zoom.min.js"),
+    tags$script(src = "script.js"),
+    tags$link(rel = "stylesheet", type = "text/css", href = "shiny.css")
+  ),
+
   titlePanel("图片标注工具"),
 
   sidebarLayout(
@@ -21,26 +27,22 @@ ui <- fluidPage(
     ),
 
     mainPanel(width = 6,
-      imageOutput("imageDisplay"),
-      textOutput("current_image"),
+      fluidRow(imageOutput("imageDisplay", width = "500px", height = "auto")),
+      fluidRow(textOutput("current_image"), width = "500px"),
+      fluidRow(textInput("imageLabel", "修改标注", "", width = "500px")),
       fluidRow(
-        column(2, align = "left", actionButton("prev_photo", "上一张", icon = icon("arrow-left"))),
-        column(2, align = "center", textInput("imageLabel", NULL, "")),
-        column(2, align = "right", actionButton("next_photo", "下一张", icon = icon("arrow-right")))
-      ),
-      verbatimTextOutput("info") # 用于显示与DataTable相关变量的UI组件
+        column(width = 3, actionButton("prev_photo", "上一张", icon = icon("arrow-left"))),
+        column(width = 3, actionButton("next_photo", "下一张", icon = icon("arrow-right")))
+      )
     )
   ),
 
-  # TODO：使用 JS 放大图片区域
-  includeScript("www/script.js")
+  verbatimTextOutput("info") # 用于显示与DataTable相关变量的UI组件
 )
 
 server <- function(input, output, session) {
 
-  # browser()
-  reactlog()
-
+  # example annotation
   example_annotation = data.frame(
     image_path = list.files("www/images", ".jpg", full.names = TRUE),
     old_label = "",
@@ -144,7 +146,7 @@ server <- function(input, output, session) {
     output$imageDisplay <- renderImage({
       imagePath <- data$image_path[[idx]]
       # 直接从磁盘路径加载图片
-      list(src = imagePath, width = "auto", height = "400px")
+      list(src = imagePath, id = "mainImage", width = "100%")
     }, deleteFile = FALSE)
 
     # 更新 dataTable 状态，高亮显示 idx 的行
@@ -193,6 +195,10 @@ server <- function(input, output, session) {
     }
   )
 
+  # Ensure that the zoom is set up after the app has flushed its output
+  session$onFlushed(function() {
+    session$sendCustomMessage(type = 'triggerZoom', message = list())
+  }, once = FALSE)
 
 }
 
