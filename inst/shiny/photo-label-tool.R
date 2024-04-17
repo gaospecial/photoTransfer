@@ -59,9 +59,8 @@ server <- function(input, output, session) {
   observeEvent(input$fileInput, {
     file <- input$fileInput
     if (is.null(file)) return()
-    user_data = read_csv(file$datapath, col_types = "c")
-    colnames(user_data) = c("image_path","old_label")
-    user_data$current_label = user_data$old_label
+    user_data = read_csv(file$datapath, col_types = "c", col_names = c("image_path","old_label"))
+    user_data$current_label = ""
 
     # 在UI中显示标注数据
     output$dataTable <- renderDT(user_data, selection = "single", server = TRUE)
