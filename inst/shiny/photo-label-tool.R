@@ -107,6 +107,7 @@ server <- function(input, output, session) {
     idx = current_index()
     indexes = input$dataTable_rows_all
     pos = which(indexes == idx)
+
     if (length(pos) == 1) {
       if (pos < length(indexes)) {
         current_index(indexes[[pos + 1]])
@@ -207,6 +208,7 @@ server <- function(input, output, session) {
   # Ensure that the zoom is set up after the app has flushed its output
   session$onFlushed(function() {
     session$sendCustomMessage(type = 'triggerZoom', message = list())
+    session$sendCustomMessage(type = 'focusImageLabel', message = list())
   }, once = FALSE)
 
 }
