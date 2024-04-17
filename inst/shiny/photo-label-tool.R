@@ -35,9 +35,7 @@ ui <- fluidPage(
         column(width = 3, actionButton("next_photo", "下一张", icon = icon("arrow-right")))
       )
     )
-  ),
-
-  verbatimTextOutput("info") # 用于显示与DataTable相关变量的UI组件
+  )
 )
 
 server <- function(input, output, session) {
@@ -52,15 +50,6 @@ server <- function(input, output, session) {
   # 存储图片数据和标注的反应性值
   annotations <- reactiveVal(example_annotation, 'annotations')
   current_index <- reactiveVal(1, 'index')
-
-  # 显示DataTable相关的输入值
-  output$info <- renderPrint({
-    str(list(
-      annotations = annotations(),
-      current_index = current_index(),
-      datatable_rows_selected = input$dataTable_rows_selected
-    ))
-  })
 
   # 处理文件上传并更新标注数据
   observeEvent(input$fileInput, {
