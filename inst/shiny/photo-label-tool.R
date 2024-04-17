@@ -39,17 +39,21 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
+  # 初始化反应式变量
+  annotations = reactiveVal()
+  current_index <- reactiveVal()
 
   # example annotation
   example_annotation = data.frame(
     image_path = list.files("www/images", ".jpg", full.names = TRUE),
     old_label = "",
     current_label = "")
-  output$dataTable <- renderDT(example_annotation, selection = "single", server = TRUE)
 
-  # 存储图片数据和标注的反应性值
-  annotations <- reactiveVal(example_annotation, 'annotations')
-  current_index <- reactiveVal(1L, 'index')
+  # 初始化示例数据
+  annotations(example_annotation)
+  current_index(1L)
+
+  output$dataTable <- renderDT(annotations(), selection = "single", server = TRUE)
 
   # 处理文件上传并更新标注数据
   observeEvent(input$fileInput, {
@@ -86,10 +90,14 @@ server <- function(input, output, session) {
     idx = current_index()
     indexes = input$dataTable_rows_all
     pos = which(indexes == idx)
-    if (pos > 1) {
-      current_index(indexes[pos - 1])
-    } else {
+    if (length(pos) == 1) {
+      if (pos > 1) {
+        current_index(indexes[[pos - 1]])
+      } else {
       # 如果是第一个元素，那么禁用 prev_photo 按钮
+      disable("prev_photo")
+      }
+    } else {
       disable("prev_photo")
     }
   })
@@ -99,10 +107,14 @@ server <- function(input, output, session) {
     idx = current_index()
     indexes = input$dataTable_rows_all
     pos = which(indexes == idx)
-    if (pos < length(indexes)) {
-      current_index(indexes[pos + 1])
+    if (length(pos) == 1) {
+      if (pos < length(indexes)) {
+        current_index(indexes[[pos + 1]])
+      } else {
+        # 如果是最后一个元素，那么禁用 next_photo 按钮
+        disable("next_photo")
+      }
     } else {
-      # 如果是最后一个元素，那么禁用 next_photo 按钮
       disable("next_photo")
     }
   })
@@ -113,6 +125,11 @@ server <- function(input, output, session) {
     idx = current_index()
     indexes = input$dataTable_rows_all
 
+    # search result may have no data
+    if (length(indexes) < 1) {
+      return()
+    }
+
     # 更新页面
     if (idx %in% indexes) {
       targetRow = which(input$dataTable_rows_all == idx)
@@ -122,9 +139,8 @@ server <- function(input, output, session) {
       current_index(indexes[[1]])
     }
 
-    # TODO: 更新按钮可用性
-    #if (which(indexes == current_index()) <= 1) disable("prev_photo")
-    #if (which(indexes == current_index()) >= length(indexes)) disable("next_photo")
+    # 更新按钮状态
+
   })
 
   # 响应 index 变化，更新当前图片、dataTable 的显示和按钮状态
@@ -150,18 +166,22 @@ server <- function(input, output, session) {
     updateTextInput(session, inputId = "imageLabel", value = data$current_label[[idx]])
 
     # 更新按钮状态
-    if (idx == 1) {
+    indexes = input$dataTable_rows_all
+    if (is.null(indexes)) indexes = 1:nrow(data)
+    if (!(idx %in% indexes)) {  # search result may have no data
       disable("prev_photo")
-    } else {
+      disable("next_photo")
+    } else if (idx == indexes[[1]]) {
+      disable("prev_photo")
+      enable("next_photo")
+    } else if (idx == indexes[[length(indexes)]]) {
       enable("prev_photo")
-    }
-    if (idx == nrow(data)) {
       disable("next_photo")
     } else {
+      enable("prev_photo")
       enable("next_photo")
     }
   })
-
 
   # 监听imageLabel输入并更新标注
   observeEvent(input$imageLabel, {
