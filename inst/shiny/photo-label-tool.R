@@ -49,7 +49,7 @@ server <- function(input, output, session) {
 
   # 存储图片数据和标注的反应性值
   annotations <- reactiveVal(example_annotation, 'annotations')
-  current_index <- reactiveVal(1, 'index')
+  current_index <- reactiveVal(1L, 'index')
 
   # 处理文件上传并更新标注数据
   observeEvent(input$fileInput, {
@@ -62,7 +62,7 @@ server <- function(input, output, session) {
     # 在UI中显示标注数据
     output$dataTable <- renderDT(user_data, selection = "single", server = TRUE)
     annotations(user_data)
-    current_index(1)
+    current_index(1L)
   })
 
   # 创建一个 datatable proxy
@@ -78,7 +78,7 @@ server <- function(input, output, session) {
   output$current_image = renderText({
     data = annotations()
     idx = current_index()
-    paste0("Filename: ", data$image_path[[idx]])
+    paste0("Filename: ", data$image_path[idx])
   })
 
   # 切换到上一张图片
