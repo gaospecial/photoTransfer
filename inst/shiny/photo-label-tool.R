@@ -99,6 +99,8 @@ server <- function(input, output, session) {
     } else {
       disable("prev_photo")
     }
+
+    session$sendCustomMessage(type = 'focusImageLabel', message = list())
   })
 
   # 切换到下一张图片
@@ -117,6 +119,8 @@ server <- function(input, output, session) {
     } else {
       disable("next_photo")
     }
+
+    session$sendCustomMessage(type = 'focusImageLabel', message = list())
   })
 
   # 响应 search 后的列表
@@ -207,7 +211,6 @@ server <- function(input, output, session) {
   # Ensure that the zoom is set up after the app has flushed its output
   session$onFlushed(function() {
     session$sendCustomMessage(type = 'triggerZoom', message = list())
-    session$sendCustomMessage(type = 'focusImageLabel', message = list())
   }, once = FALSE)
 
 }
